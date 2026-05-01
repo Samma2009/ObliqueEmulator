@@ -10,7 +10,9 @@ namespace Oblique
         public static PagedArray Memory = new();
         public static Thread EngineThread;
         static volatile bool running = false;
+        static volatile bool paused = false;
         public static bool IsRunning { get => running; set { running = value; RunningChanged?.DynamicInvoke(); } }
+        public static bool IsPaused { get => paused; set { paused = value; RunningChanged?.DynamicInvoke(); } }
         public static Window window;
 
         public static Delegate RunningChanged;
@@ -84,12 +86,21 @@ namespace Oblique
             // Emulation menu
             {
                 var fileMenu = new Menu();
-                var fileItem = new MenuItem("Emulatiom");
+                var fileItem = new MenuItem("Emulation");
                 fileItem.Submenu = fileMenu;
 
                 var loadItem = new MenuItem("Stop");
                 loadItem.Activated += (_, _) => IsRunning = false;
                 fileMenu.Append(loadItem);
+
+                var pauseItem = new MenuItem("Pause");
+                pauseItem.Activated += (_, _) => 
+                {
+                    IsPaused = !IsPaused;
+
+                    pauseItem.Label = IsPaused ? "Resume" : "Pause";
+                };
+                fileMenu.Append(pauseItem);
 
                 topbar.Append(fileItem);
             }
@@ -117,8 +128,8 @@ namespace Oblique
 
                 RunningChanged = () =>
                 {
-                    string color = IsRunning ? "green" : "red";
-                    string text = IsRunning ? "Running" : "Stopped";
+                    string color = IsPaused ? "chocolate" : IsRunning ? "green" : "red";
+                    string text = IsPaused ? "Paused" : IsRunning ? "Running" : "Stopped";
                     label.Markup = $"<span foreground='{color}'>{text}</span>";
                 };
 
@@ -159,6 +170,8 @@ namespace Oblique
             {
                 while (IsRunning)
                 {
+                    if (IsPaused) continue;
+
                     if (Register.IP < Memory.Length) InstructionIvoke();
                     else IsRunning = false;
                 }
