@@ -195,17 +195,17 @@ namespace Oblique
         static void BO(sbyte rel8) => Register.IP += Register.STAT.GetBit(3) == 1 ? rel8 : 0;
         static void BNO(sbyte rel8) => Register.IP += Register.STAT.GetBit(3) == 0 ? rel8 : 0;
 
-        static void RET() => Register.IP += Program.Memory.PopStack();
+        static void RET() => Register.IP = Program.Memory.PopStack();
 
         static void CALLR(Register abs32)
         {
             Program.Memory.PushStack(Register.IP);
             Register.IP = abs32._value;
         }
-        static void CALL(uint abs32)
+        static void CALL(uint rel32)
         {
-            Program.Memory.PushStack(abs32 - Register.IP);
-            Register.IP = abs32;
+            Program.Memory.PushStack(Register.IP);
+            Register.IP += rel32;
         }
         static void CALLA(uint abs32) => CALLR(abs32);
 
