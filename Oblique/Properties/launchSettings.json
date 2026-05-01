@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Oblique": {
+      "commandName": "Project",
+      "commandLineArgs": "test.bin"
+    }
+  }
+}
