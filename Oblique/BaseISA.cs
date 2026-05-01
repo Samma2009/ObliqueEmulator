@@ -53,6 +53,28 @@ namespace Oblique
             {0x1E,SUBI16},
             {0x1F,SUBI8},
 
+            {0x20,BZ},
+            {0x21,BNZ},
+
+            {0x22,BS},
+            {0x23,BNS},
+
+            {0x24,BO},
+            {0x25,BNO},
+
+            {0x26,RET},
+
+            {0x27,J},
+            {0x28,J32},
+
+            {0x29,CALL},
+            {0x2A,CALLR},
+
+            {0x2B,JR},
+            {0x2C,JA},
+
+            {0x2D,CALLA},
+
             {0x50,ADCF},
             {0x51,ADCI32F},
             {0x52,ADCI16F},
@@ -75,6 +97,15 @@ namespace Oblique
             {0x5F,SUBI32F},
             {0x60,SUBI16F},
             {0x61,SUBI8F},
+
+            {0xED,BGE},
+            {0xEE,BLT},
+            {0xEF,BGT},
+            {0xF0,BLE},
+            {0xF1,BGEU},
+            {0xF2,BLTU},
+            {0xF3,BGTU},
+            {0xF4,BLEU},
         };
 
         static void ADC(Register rD, Register rS) => rD._value += rS + Register.STAT.GetBit(2);
@@ -149,5 +180,42 @@ namespace Oblique
 
         static void ORF(Register rD, Register rS) { OR(rD, rS); CMP(rD, rS); }
         static void XORF(Register rD, Register rS) { XOR(rD, rS); CMP(rD, rS); }
+
+        static void JR(Register abs32) => Register.IP = abs32._value;
+        static void JA(uint abs32) => Register.IP = abs32;
+        static void J(sbyte rel8) => Register.IP += rel8;
+        static void J32(int rel32) => Register.IP += rel32;
+
+        static void BZ(sbyte rel8) => Register.IP += Register.STAT.GetBit(0) == 1 ? rel8 : 0;
+        static void BNZ(sbyte rel8) => Register.IP += Register.STAT.GetBit(0) == 0 ? rel8 : 0;
+
+        static void BS(sbyte rel8) => Register.IP += Register.STAT.GetBit(1) == 1 ? rel8 : 0;
+        static void BNS(sbyte rel8) => Register.IP += Register.STAT.GetBit(1) == 0 ? rel8 : 0;
+
+        static void BO(sbyte rel8) => Register.IP += Register.STAT.GetBit(3) == 1 ? rel8 : 0;
+        static void BNO(sbyte rel8) => Register.IP += Register.STAT.GetBit(3) == 0 ? rel8 : 0;
+
+        static void RET() => Register.IP += Program.Memory.PopStack();
+
+        static void CALLR(Register abs32)
+        {
+            Program.Memory.PushStack(Register.IP);
+            Register.IP = abs32._value;
+        }
+        static void CALL(uint abs32)
+        {
+            Program.Memory.PushStack(abs32 - Register.IP);
+            Register.IP = abs32;
+        }
+        static void CALLA(uint abs32) => CALLR(abs32);
+
+        static void BGE(sbyte rel8) => Register.IP += Register.STAT.GetBit(1) == Register.STAT.GetBit(3) ? rel8 : 0;
+        static void BLT(sbyte rel8) => Register.IP += Register.STAT.GetBit(1) != Register.STAT.GetBit(3) ? rel8 : 0;
+        static void BGT(sbyte rel8) => Register.IP += Register.STAT.GetBit(0) == 0 || Register.STAT.GetBit(1) == Register.STAT.GetBit(3) ? rel8 : 0;
+        static void BLE(sbyte rel8) => Register.IP += Register.STAT.GetBit(0) == 1 || Register.STAT.GetBit(1) != Register.STAT.GetBit(3) ? rel8 : 0;
+        static void BGEU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 0 ? rel8 : 0;
+        static void BLTU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 1 ? rel8 : 0;
+        static void BGTU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 0 && Register.STAT.GetBit(0) == 0 ? rel8 : 0;
+        static void BLEU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 1 || Register.STAT.GetBit(1) == 0 ? rel8 : 0;
     }
 }

@@ -7,7 +7,7 @@ namespace Oblique
     internal class Program
     {
         public static IISAProvider isa = new BaseISA();
-        public static byte[] Memory = [];
+        public static PagedArray Memory = new();
         public static Thread EngineThread;
         static volatile bool running = false;
         public static bool IsRunning { get => running; set { running = value; RunningChanged?.DynamicInvoke(); } }
@@ -81,6 +81,19 @@ namespace Oblique
                 topbar.Append(fileItem);
             }
 
+            // Emulation menu
+            {
+                var fileMenu = new Menu();
+                var fileItem = new MenuItem("Emulatiom");
+                fileItem.Submenu = fileMenu;
+
+                var loadItem = new MenuItem("Stop");
+                loadItem.Activated += (_, _) => IsRunning = false;
+                fileMenu.Append(loadItem);
+
+                topbar.Append(fileItem);
+            }
+
             // View menu
             {
                 var fileMenu = new Menu();
@@ -123,8 +136,11 @@ namespace Oblique
         {
             if (EngineThread != null) EngineThread.Join(500);
 
-            Memory = File.ReadAllBytes(file);
             Register.ResetRegisters();
+
+            var program = File.ReadAllBytes(file);
+            Memory.Clear();
+            Memory.Load(Register.IP,program);
 
             IsRunning = true;
 
@@ -172,9 +188,9 @@ namespace Oblique
             foreach (var item in isa.InstructionMap[op].Method.GetParameters())
                 Parameters.Add(TypeInferer.InferParameter(item.ParameterType,ref bitsize));
 
-            isa.InstructionMap[op].DynamicInvoke(Parameters.ToArray());
-
             Register.IP += bitsize / 8;
+
+            isa.InstructionMap[op].DynamicInvoke(Parameters.ToArray());
         }
     }
 }

@@ -22,15 +22,15 @@ namespace Oblique
             for (int i = 0; i < Bregs.Length; i++) Bregs[i] = new();
             for (int i = 0; i < CTLregs.Length; i++) CTLregs[i] = new();
 
-            IP = new();
-            STK = new();
+            IP = new(0xA0000000);
+            STK = new(0x20000000);
             FR = new();
             STAT = new();
         }
 
         public static Register GetBRegisterFromIP(ref uint bitoffset)
         {
-            int byteIndex = (int)(IP + bitoffset / 8);
+            uint byteIndex = IP + bitoffset / 8;
             int lo = Program.Memory[byteIndex];
             int hi = byteIndex + 1 < Program.Memory.Length ? Program.Memory[byteIndex + 1] : 0;
 

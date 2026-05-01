@@ -14,7 +14,7 @@
 ### 1.5:
 - [X] Integer ALU
 - [ ] Floating point
-- [ ] Branching
+- [X] Branching
 - [ ] Memory
 - [ ] Stack
 - [ ] System
