@@ -15,7 +15,7 @@
 - [X] Integer ALU
 - [ ] Floating point
 - [X] Branching
-- [ ] Memory
+- [X] Memory
 - [ ] Stack
 - [ ] System
 - [ ] Bit manipulation

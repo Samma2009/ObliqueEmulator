@@ -10,6 +10,7 @@ namespace Oblique
     {
         private const int PAGE_SIZE = 4096;
         private readonly Dictionary<uint, byte[]> _pages = new();
+        private readonly Dictionary<uint, (uint size,uint key)> KeyedRegions = new();
 
         public byte this[uint addr]
         {
@@ -58,6 +59,34 @@ namespace Oblique
             this[addr + 1] = (byte)(val >> 8);
             this[addr + 2] = (byte)(val >> 16);
             this[addr + 3] = (byte)(val >> 24);
+        }
+
+        public void WriteU16(uint addr, ushort val)
+        {
+            this[addr] = (byte)(val);
+            this[addr + 1] = (byte)(val >> 8);
+        }
+
+        public void ProtectRegion(uint baseAddr, uint size, uint key) => KeyedRegions[baseAddr] = (size, key);
+
+        public bool IsRegionReadable(uint addr, uint length)
+        {
+            for (uint i = 0; i < length; i += PAGE_SIZE)
+            {
+                var page = (addr + i) / PAGE_SIZE;
+                if (!_pages.ContainsKey(page))
+                    return false;
+            }
+            return true;
+        }
+
+        public bool CheckCLT6(uint addr)
+        {
+            foreach (var (regionBase, (size, key)) in KeyedRegions)
+                if (addr >= regionBase && addr < regionBase + size)
+                    return Register.CTLregs[6] == key;
+
+            return true;
         }
 
         private static (uint page, uint offset) Split(uint addr)

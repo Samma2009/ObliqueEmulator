@@ -75,6 +75,9 @@ namespace Oblique
 
             {0x2D,CALLA},
 
+            {0x36,NOP},
+            {0x37,BRK},
+
             {0x50,ADCF},
             {0x51,ADCI32F},
             {0x52,ADCI16F},
@@ -97,6 +100,29 @@ namespace Oblique
             {0x5F,SUBI32F},
             {0x60,SUBI16F},
             {0x61,SUBI8F},
+
+            {0xA0,LDK},
+            {0xA1,STK},
+            {0xA2,LD},
+            {0xA3,ST},
+
+            {0xA4,LDRGN},
+
+            {0xA5,LDBU},
+            {0xA6,LDBS},
+            {0xA7,LDHU},
+            {0xA8,LDHS},
+            {0xA9,STB},
+            {0xAA,STH},
+
+            {0xAB,LDRIP},
+
+            {0xC0,SPAWN},
+            {0xC1,YIELD},
+
+            {0xCB,EXT},
+
+            {0xD6,CICPY},
 
             {0xED,BGE},
             {0xEE,BLT},
@@ -217,5 +243,82 @@ namespace Oblique
         static void BLTU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 1 ? rel8 : 0;
         static void BGTU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 0 && Register.STAT.GetBit(0) == 0 ? rel8 : 0;
         static void BLEU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 1 || Register.STAT.GetBit(1) == 0 ? rel8 : 0;
+
+        static void NOP() { }
+        static void BRK() { Program.IsPaused = true; Register.DumpRegister(); }
+
+        static void SPAWN(Register rD, Register rFn, Register rArg) => rD._value = Register.SpawnFiber(rFn,rArg);
+        static void YIELD(Register rQ) => Register.SwitchFiber(rQ);
+        static void EXT(Register rD, Register rS,byte subop8) => NOP();
+
+        static void LDK(Register rD, Register rA, sbyte off8)
+        {
+            uint addr = (uint)(rA._value + off8);
+            if (Program.Memory.CheckCLT6(addr))
+                rD._value = Program.Memory.ReadU32(addr);
+            else throw new EmulationException($"Unaligned memory access at address 0x{addr:X8}");
+
+        }
+        static void STK(Register rA, sbyte off8, Register rS)
+        {
+            uint addr = (uint)(rA._value + off8);
+
+            if (Program.Memory.CheckCLT6(addr))
+                Program.Memory.WriteU32(addr, rS._value);
+            else throw new EmulationException($"Unaligned memory access at address 0x{addr:X8}");
+        }
+
+        static void LD(Register rD, Register rA, sbyte off8) => rD._value = Program.Memory.ReadU32((uint)(rA._value + off8));
+        static void ST(Register rA, sbyte off8, Register rS) => Program.Memory.WriteU32((uint)(rA._value + off8), rS._value);
+
+        static void LDRIP(Register rD, int rel32) => rD._value = Program.Memory.ReadU32(Register.IP + (uint)rel32);
+
+        static void CICPY(Register rD, Register rS, Register rC)
+        {
+            uint s = rC._value;
+
+            while (s > 0)
+            {
+                if (s >= 4) 
+                {
+                    rD._value = Program.Memory.ReadU32(rS);
+                    rS += 4;
+                    s -= 4;
+                }
+                else if (s >= 2)
+                {
+                    rD._value = Program.Memory.ReadU16(rS);
+                    rS += 2;
+                    s -= 2;
+                }
+                else
+                {
+                    rD._value = Program.Memory[rS];
+                    rS += 1;
+                    s -= 1;
+                }
+            }
+        }
+
+        static void LDRGN(Register rD, Register rA, byte len8)
+        {
+            if (!Program.Memory.IsRegionReadable(rA._value, len8))
+            {
+                Register.STAT.SetBit(3, true);
+                return;
+            }
+
+            rD._value = Program.Memory.ReadU32(rA._value);
+            rA._value += len8;
+        }
+
+        static void LDBU(Register rD, Register rA, sbyte off8) => rD._value = Program.Memory[(uint)(rA._value + off8)];
+        static void LDBS(Register rD, Register rA, sbyte off8) => rD._value = (uint)(sbyte)Program.Memory[(uint)(rA._value + off8)];
+
+        static void LDHU(Register rD, Register rA, sbyte off8) => rD._value = Program.Memory.ReadU16((uint)(rA._value + off8));
+        static void LDHS(Register rD, Register rA, sbyte off8) => rD._value = (uint)(short)Program.Memory.ReadU16((uint)(rA._value + off8));
+
+        static void STB(Register rA, sbyte off8, Register rS) => Program.Memory[(uint)(rA._value + off8)] = (byte)rS._value;
+        static void STH(Register rA, sbyte off8, Register rS) => Program.Memory.WriteU16((uint)(rA._value + off8), (ushort)rS._value);
     }
 }

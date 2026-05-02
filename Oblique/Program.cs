@@ -93,7 +93,7 @@ namespace Oblique
                 loadItem.Activated += (_, _) => IsRunning = false;
                 fileMenu.Append(loadItem);
 
-                var pauseItem = new MenuItem("Pause");
+                var pauseItem = new MenuItem(IsPaused ? "Resume" : "Pause");
                 pauseItem.Activated += (_, _) => 
                 {
                     IsPaused = !IsPaused;
@@ -200,6 +200,8 @@ namespace Oblique
 
             foreach (var item in isa.InstructionMap[op].Method.GetParameters())
                 Parameters.Add(TypeInferer.InferParameter(item.ParameterType,ref bitsize));
+
+            if (bitsize % 8 != 0) bitsize += 8 - (bitsize % 8);
 
             Register.IP += bitsize / 8;
 

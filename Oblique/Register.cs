@@ -13,19 +13,57 @@ namespace Oblique
     {
         public uint _value;
 
-        public static Register[] Bregs = new Register[16];
+        public static uint CurrentFiberHandle = 0;
+        public static Dictionary<uint, Fiber> Fibers = new();
+        static uint NextStackBase = 0x20000000;
+
+        public static Register[] Bregs 
+        {
+            get => Fibers[CurrentFiberHandle].Bregs; 
+            set => Fibers[CurrentFiberHandle].Bregs = value; 
+        }
+
         public static Register[] CTLregs = new Register[8];
-        public static Register IP = new(), STK = new(), FR = new(),STAT = new();
+
+        public static Register IP { get => Fibers[CurrentFiberHandle].IP; set => Fibers[CurrentFiberHandle].IP = value; }
+        public static Register STK { get => Fibers[CurrentFiberHandle].STK; set => Fibers[CurrentFiberHandle].STK = value; }
+        public static Register FR { get => Fibers[CurrentFiberHandle].FR; set => Fibers[CurrentFiberHandle].FR = value; }
+        public static Register STAT { get => Fibers[CurrentFiberHandle].STAT; set => Fibers[CurrentFiberHandle].STAT = value; }
 
         public static void ResetRegisters()
         {
-            for (int i = 0; i < Bregs.Length; i++) Bregs[i] = new();
-            for (int i = 0; i < CTLregs.Length; i++) CTLregs[i] = new();
+            Fibers.Clear();
+            NextStackBase = 0x20000000;
 
-            IP = new(0xA0000000);
-            STK = new(0x20000000);
-            FR = new();
-            STAT = new();
+            CurrentFiberHandle = 0;
+            Fibers.Add(CurrentFiberHandle, new(stk: NextStackBase));
+
+            for (int i = 0; i < CTLregs.Length; i++) CTLregs[i] = new();
+        }
+
+        public static uint SpawnFiber(uint ip,uint arg = 0)
+        {
+            uint handle = (uint)Random.Shared.Next(int.MinValue,int.MaxValue);
+
+            while (Fibers.ContainsKey(handle))
+                handle = (uint)Random.Shared.Next(int.MinValue, int.MaxValue);
+
+            NextStackBase -= 0x10000;
+
+            var f = new Fiber(ip,NextStackBase);
+            f.Bregs[0]._value = arg;
+
+            Fibers.Add(handle, f);
+
+            var idx = Fibers.Keys.ToList().IndexOf(handle);
+
+            return handle;
+        }
+
+        public static void SwitchFiber(uint handle)
+        {
+            if (!Fibers.ContainsKey(handle)) throw new EmulationException($"Tried to switch to nonexistant fiber {handle}");
+            CurrentFiberHandle = handle;
         }
 
         public static Register GetBRegisterFromIP(ref uint bitoffset)
@@ -65,6 +103,9 @@ namespace Oblique
         public static void DumpRegister() 
         {
             StringBuilder sb = new();
+
+            sb.AppendLine($"Fiber = {CurrentFiberHandle}");
+            sb.AppendLine();
 
             for (int i = 0; i < Bregs.Length; i++)
                 sb.AppendLine($"B{i} = 0x{Bregs[i]:X8}");
