@@ -156,9 +156,9 @@ namespace Oblique
         static void ADCI8(Register rD, byte imm8) => rD._value = Register.AddWithCarry(rD, imm8) + Register.STAT.GetBit(2);
 
         static void ADD(Register rD, Register rS) => rD._value += rS;
-        static void ADDI32(Register rD, uint imm32) => rD._value = Register.AddWithCarry(rD, imm32);
-        static void ADDI16(Register rD, ushort imm16) => rD._value = Register.AddWithCarry(rD, imm16);
-        static void ADDI8(Register rD, byte imm8) => rD._value = Register.AddWithCarry(rD, imm8);
+        static void ADDI32(Register rD, uint imm32) => rD._value = rD + imm32;
+        static void ADDI16(Register rD, ushort imm16) => rD._value = rD + imm16;
+        static void ADDI8(Register rD, byte imm8) => rD._value = rD + imm8;
 
         static void AND(Register rD, Register rS) => rD._value &= rS;
         static void ANDI32(Register rD, uint imm32) => rD._value &= imm32;
@@ -253,12 +253,12 @@ namespace Oblique
 
         static void BGE(sbyte rel8) => Register.IP += Register.STAT.GetBit(1) == Register.STAT.GetBit(3) ? rel8 : 0;
         static void BLT(sbyte rel8) => Register.IP += Register.STAT.GetBit(1) != Register.STAT.GetBit(3) ? rel8 : 0;
-        static void BGT(sbyte rel8) => Register.IP += Register.STAT.GetBit(0) == 0 || Register.STAT.GetBit(1) == Register.STAT.GetBit(3) ? rel8 : 0;
+        static void BGT(sbyte rel8) => Register.IP += Register.STAT.GetBit(0) == 0 && Register.STAT.GetBit(1) == Register.STAT.GetBit(3) ? rel8 : 0;
         static void BLE(sbyte rel8) => Register.IP += Register.STAT.GetBit(0) == 1 || Register.STAT.GetBit(1) != Register.STAT.GetBit(3) ? rel8 : 0;
         static void BGEU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 0 ? rel8 : 0;
         static void BLTU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 1 ? rel8 : 0;
         static void BGTU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 0 && Register.STAT.GetBit(0) == 0 ? rel8 : 0;
-        static void BLEU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 1 || Register.STAT.GetBit(1) == 0 ? rel8 : 0;
+        static void BLEU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 1 || Register.STAT.GetBit(0) == 0 ? rel8 : 0;
 
         static void NOP() { }
         static void BRK() { Program.IsPaused = true; Register.DumpRegister(); }
@@ -297,20 +297,23 @@ namespace Oblique
             {
                 if (s >= 4) 
                 {
-                    rD._value = Program.Memory.ReadU32(rS);
+                    Program.Memory.WriteU32(rD, Program.Memory.ReadU32(rS));
                     rS += 4;
+                    rD += 4;
                     s -= 4;
                 }
                 else if (s >= 2)
                 {
-                    rD._value = Program.Memory.ReadU16(rS);
+                    Program.Memory.WriteU16(rD, Program.Memory.ReadU16(rS));
                     rS += 2;
+                    rD += 2;
                     s -= 2;
                 }
                 else
                 {
-                    rD._value = Program.Memory[rS];
+                    Program.Memory[rD] = Program.Memory[rS];
                     rS += 1;
+                    rD += 1;
                     s -= 1;
                 }
             }

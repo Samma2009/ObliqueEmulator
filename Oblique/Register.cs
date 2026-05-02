@@ -55,8 +55,6 @@ namespace Oblique
 
             Fibers.Add(handle, f);
 
-            var idx = Fibers.Keys.ToList().IndexOf(handle);
-
             return handle;
         }
 
@@ -96,7 +94,7 @@ namespace Oblique
         public static uint AddWithCarry(uint a, uint b)
         {
             uint result = a + b;
-            Register.STAT.SetBit(2, result < a);
+            STAT.SetBit(2, result < a);
             return result;
         }
 
