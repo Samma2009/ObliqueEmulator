@@ -18,10 +18,11 @@
 - [X] Memory
 - [ ] Stack
 - [ ] System
-- [ ] Bit manipulation
+- [X] Bit manipulation
 - [ ] Atomic
 - [ ] Observability
 - [ ] I/O Ports
 - [ ] Repeat prefix
+> 104 / 167 instructions
 ### 2.0:
 > at the time of writing, the bslash 2.0 architecture has not been published, and still in design

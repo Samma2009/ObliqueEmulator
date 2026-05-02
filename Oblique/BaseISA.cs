@@ -78,6 +78,19 @@ namespace Oblique
             {0x36,NOP},
             {0x37,BRK},
 
+            {0x40,ROR},
+            {0x41,RORI8},
+            {0x42,POPC},
+            {0x43,CLZ},
+            {0x44,CTZ},
+            {0x45,BTST},
+            {0x46,SHL},
+            {0x47,SHLI8},
+            {0x48,LSR},
+            {0x49,LSRI8},
+            {0x4A,ASR},
+            {0x4B,ASRI8},
+
             {0x50,ADCF},
             {0x51,ADCI32F},
             {0x52,ADCI16F},
@@ -100,6 +113,9 @@ namespace Oblique
             {0x5F,SUBI32F},
             {0x60,SUBI16F},
             {0x61,SUBI8F},
+
+            {0x70,BEXT},
+            {0x71,BDEP},
 
             {0xA0,LDK},
             {0xA1,STK},
@@ -320,5 +336,49 @@ namespace Oblique
 
         static void STB(Register rA, sbyte off8, Register rS) => Program.Memory[(uint)(rA._value + off8)] = (byte)rS._value;
         static void STH(Register rA, sbyte off8, Register rS) => Program.Memory.WriteU16((uint)(rA._value + off8), (ushort)rS._value);
+
+        static void ROR(Register rD, Register rS) => rD._value = (uint)BitOperations.RotateRight(rD,rS);
+        static void RORI8(Register rD, byte imm8) => rD._value = (uint)BitOperations.RotateRight(rD, imm8);
+
+        static void POPC(Register rD, Register rS) => rD._value = (uint)BitOperations.PopCount(rS);
+        static void CLZ(Register rD, Register rS) => rD._value = (uint)BitOperations.LeadingZeroCount(rS);
+        static void CTZ(Register rD, Register rS) => rD._value = (uint)BitOperations.TrailingZeroCount(rS);
+
+        static void BTST(Register rD, byte imm8) => Register.STAT.SetBit(0,rD.GetBit(imm8) == 1 ? false : true);
+
+        static void SHL(Register rD, Register rS) => rD._value = (uint)(rD << (rS & 31));
+        static void SHLI8(Register rD, byte imm8) => rD._value = (uint)(rD << (imm8 & 31));
+
+        static void LSR(Register rD, Register rS) => rD._value = (uint)(rD >> (rS & 31));
+        static void LSRI8(Register rD, byte imm8) => rD._value = (uint)(rD >> (imm8 & 31));
+
+        static void ASR(Register rD, Register rS) => rD._value = (uint)((int)rD._value >> (int)(rS._value & 31));
+
+        static void ASRI8(Register rD, byte imm8) => rD._value = (uint)((int)rD._value >> (imm8 & 31));
+
+        static void BEXT(Register rD, Register rS, Register rM)
+        {
+            uint result = 0;
+            uint src = rS._value;
+            uint mask = rM._value;
+            int outBit = 0;
+
+            for (int i = 0; i < 32; i++)
+                if ((mask >> i & 1) == 1) result |= ((src >> i) & 1) << outBit++;
+
+            rD._value = result;
+        }
+        static void BDEP(Register rD, Register rS, Register rM)
+        {
+            uint result = 0;
+            uint src = rS._value;
+            uint mask = rM._value;
+            int inBit = 0;
+
+            for (int i = 0; i < 32; i++)
+                if ((mask >> i & 1) == 1) result |= ((src >> inBit++) & 1) << i;
+
+            rD._value = result;
+        }
     }
 }
