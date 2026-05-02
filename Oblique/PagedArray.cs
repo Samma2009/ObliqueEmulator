@@ -45,10 +45,33 @@ namespace Oblique
             Register.STK -= 4;
             WriteU32(Register.STK, val);
         }
-        public uint PopStack()
+        public void PushStack(ushort val)
+        {
+            Register.STK -= 2;
+            WriteU16(Register.STK, val);
+        }
+        public void PushStack(byte val)
+        {
+            Register.STK--;
+            this[Register.STK] = val;
+        }
+
+        public uint PopStack32()
         {
             var val = ReadU32(Register.STK);
             Register.STK += 4;
+            return val;
+        }
+        public ushort PopStack16()
+        {
+            var val = ReadU16(Register.STK);
+            Register.STK += 2;
+            return val;
+        }
+        public byte PopStack8()
+        {
+            var val = this[Register.STK];
+            Register.STK++;
             return val;
         }
 

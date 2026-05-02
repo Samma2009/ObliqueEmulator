@@ -67,13 +67,12 @@ namespace Oblique
         public static Register GetBRegisterFromIP(ref uint bitoffset)
         {
             uint byteIndex = IP + bitoffset / 8;
-            int bitPos = (int)(bitoffset % 8);
+            byte bitPos = (byte)(bitoffset % 8);
 
-            int lo = Program.Memory[byteIndex];
-            int hi = Program.Memory[byteIndex + 1];
-            int word = lo | (hi << 8);
+            byte rregcode = Program.Memory[byteIndex];
+            byte regcode = (byte)(rregcode & (byte)(0xF0 >> bitPos));
+            byte code = (byte)(regcode >> (4 - bitPos));
 
-            var code = (word >> (bitPos == 0 ? 4 : 0)) & 0b1111;
             bitoffset += 4;
 
             if (code < Bregs.Length) return Bregs[code];

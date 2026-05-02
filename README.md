@@ -16,7 +16,7 @@
 - [ ] Floating point
 - [X] Branching
 - [X] Memory
-- [ ] Stack
+- [X] Stack
 - [ ] System
 - [X] Bit manipulation
 - [ ] Atomic

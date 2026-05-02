@@ -75,8 +75,23 @@ namespace Oblique
 
             {0x2D,CALLA},
 
+            {0x2E,LEAVE},
+            {0x2F,ENTERI16},
+
+            {0x30,PSTAT},
+            {0x31,POPSTAT},
+            {0x32,PCTL},
+            {0x33,POPCTL},
+            {0x34,PFR},
+            {0x35,POPFR},
+
             {0x36,NOP},
             {0x37,BRK},
+
+            {0x38,RDSTK},
+            {0x39,WRSTK},
+            {0x3A,RDFR},
+            {0x3B,WRFR},
 
             {0x40,ROR},
             {0x41,RORI8},
@@ -148,6 +163,10 @@ namespace Oblique
             {0xF2,BLTU},
             {0xF3,BGTU},
             {0xF4,BLEU},
+
+            {0xF5,PUSHR},
+            {0xF6,POPR},
+            {0xF7,PUSHI32},
 
             {0xFD,OUTPRTS},
         };
@@ -239,7 +258,7 @@ namespace Oblique
         static void BO(sbyte rel8) => Register.IP += Register.STAT.GetBit(3) == 1 ? rel8 : 0;
         static void BNO(sbyte rel8) => Register.IP += Register.STAT.GetBit(3) == 0 ? rel8 : 0;
 
-        static void RET() => Register.IP = Program.Memory.PopStack();
+        static void RET() => Register.IP = Program.Memory.PopStack32();
 
         static void CALLR(Register abs32)
         {
@@ -277,7 +296,7 @@ namespace Oblique
             else throw new EmulationException($"Unaligned memory access at address 0x{addr:X8}");
 
         }
-        static void STK(Register rA, sbyte off8, Register rS)
+        static void STK(Register rS,Register rA, sbyte off8)
         {
             uint addr = (uint)(rA._value + off8);
 
@@ -287,7 +306,7 @@ namespace Oblique
         }
 
         static void LD(Register rD, Register rA, sbyte off8) => rD._value = Program.Memory.ReadU32((uint)(rA._value + off8));
-        static void ST(Register rA, sbyte off8, Register rS) => Program.Memory.WriteU32((uint)(rA._value + off8), rS._value);
+        static void ST(Register rS, Register rA, sbyte off8) => Program.Memory.WriteU32((uint)(rA._value + off8), rS._value);
 
         static void LDRIP(Register rD, int rel32) => rD._value = Program.Memory.ReadU32(Register.IP + (uint)rel32);
 
@@ -339,8 +358,8 @@ namespace Oblique
         static void LDHU(Register rD, Register rA, sbyte off8) => rD._value = Program.Memory.ReadU16((uint)(rA._value + off8));
         static void LDHS(Register rD, Register rA, sbyte off8) => rD._value = (uint)(short)Program.Memory.ReadU16((uint)(rA._value + off8));
 
-        static void STB(Register rA, sbyte off8, Register rS) => Program.Memory[(uint)(rA._value + off8)] = (byte)rS._value;
-        static void STH(Register rA, sbyte off8, Register rS) => Program.Memory.WriteU16((uint)(rA._value + off8), (ushort)rS._value);
+        static void STB(Register rS, Register rA, sbyte off8) => Program.Memory[(uint)(rA._value + off8)] = (byte)rS._value;
+        static void STH(Register rS,Register rA, sbyte off8) => Program.Memory.WriteU16((uint)(rA._value + off8), (ushort)rS._value);
 
         static void ROR(Register rD, Register rS) => rD._value = (uint)BitOperations.RotateRight(rD,rS);
         static void RORI8(Register rD, byte imm8) => rD._value = (uint)BitOperations.RotateRight(rD, imm8);
@@ -398,7 +417,40 @@ namespace Oblique
                 _ => throw new EmulationException($"Invalid byte size {size2}")
             };
 
-            //Console.WriteLine(Encoding.Default.GetString(data));
+            Console.WriteLine(Encoding.Default.GetString(data));
         }
+
+        static void PUSHR(Register rS) => Program.Memory.PushStack(rS);
+        static void PUSHI32(uint imm32) => Program.Memory.PushStack(imm32);
+        static void POPR(Register rD) => rD._value = Program.Memory.PopStack32();
+
+        static void RDSTK(Register rD) => rD._value = Register.STK;
+        static void WRSTK(Register rS) => Register.STK = rS;
+
+        static void RDFR(Register rD) => rD._value = Register.FR;
+        static void WRFR(Register rS) => Register.FR = rS;
+
+        static void ENTERI16(ushort frame16)
+        {
+            PFR();
+            Register.STK -= frame16;
+        }
+
+        static void LEAVE() 
+        {
+            Register.STK = Register.FR;
+            Register.FR = Program.Memory.PopStack32();
+        }
+
+        static void PSTAT() => Program.Memory.PushStack(Register.STAT._value);
+        static void POPSTAT() => Register.STAT = Program.Memory.PopStack32();
+        static void PCTL(CTLIdx3 n) => Program.Memory.PushStack(Register.CTLregs[(int)n]);
+        static void POPCTL(CTLIdx3 n) => Register.CTLregs[(int)n] = Program.Memory.PopStack32();
+        static void PFR()
+        {
+            Program.Memory.PushStack(Register.FR._value);
+            Register.FR = Register.STK;
+        }
+        static void POPFR() => Register.FR = Program.Memory.PopStack32();
     }
 }

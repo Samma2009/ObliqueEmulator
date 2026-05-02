@@ -207,6 +207,8 @@ namespace Oblique
             Register.IP += bitsize / 8;
 
             isa.InstructionMap[op].DynamicInvoke(Parameters.ToArray());
+
+            //Console.WriteLine("Invoked");
         }
     }
 }
