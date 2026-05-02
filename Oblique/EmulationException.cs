@@ -15,6 +15,6 @@ namespace Oblique
 		public EmulationException(string message, Exception inner) : base(message, inner) { }
 		protected EmulationException(
 		  System.Runtime.Serialization.SerializationInfo info,
-		  System.Runtime.Serialization.StreamingContext context) : base(info, context) { Register.DumpRegister(); }
+		  System.Runtime.Serialization.StreamingContext context) : base(info, context) { Register.DumpRegister(); Program.IsRunning = false; }
     }
 }

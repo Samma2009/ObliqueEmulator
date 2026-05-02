@@ -36,8 +36,7 @@ namespace Oblique
                 this[(uint)(baseAddr + i)] = data[i];
         }
 
-        public uint ReadU32(uint addr) => 
-            (uint)(this[addr] | this[addr + 1] << 8 | this[addr + 2] << 16 | this[addr + 3] << 24);
+        public uint ReadU32(uint addr) => (uint)this[addr] | (uint)this[addr + 1] << 8 | (uint)this[addr + 2] << 16 | (uint)this[addr + 3] << 24;
 
         public ushort ReadU16(uint addr) => (ushort)(this[addr] | this[addr + 1] << 8);
 

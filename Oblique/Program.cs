@@ -145,6 +145,7 @@ namespace Oblique
 
         static void StartEngine(string file)
         {
+            IsRunning = false;
             if (EngineThread != null) EngineThread.Join(500);
 
             Register.ResetRegisters();
@@ -192,7 +193,7 @@ namespace Oblique
         {
             var op = Memory[Register.IP];
 
-            if (!isa.InstructionMap.ContainsKey(op)) throw new EmulationException($"Invalid opcode {op:X2} at address {Register.IP:X8}");
+            if (!isa.InstructionMap.ContainsKey(op)) throw new EmulationException($"Invalid opcode 0x{op:X2} at address {Register.IP:X8}");
 
             List<object> Parameters = new();
 

@@ -13,6 +13,7 @@ namespace Oblique
             return t switch
             {
                 _ when t == typeof(Register) => Register.GetBRegisterFromIP(ref bitsize),
+                _ when t == typeof(BytesSize2) => InferByteSize2(ref bitsize),
                 _ when t == typeof(int) => InferInt(ref bitsize),
                 _ when t == typeof(uint) => InferUint(ref bitsize),
                 _ when t == typeof(ushort) => InferUShort(ref bitsize),
@@ -20,6 +21,15 @@ namespace Oblique
                 _ when t == typeof(sbyte) => InferSbyte(ref bitsize),
                 _ => throw new EmulationException($"Unsupported parameter type {t.FullName}")
             };
+        }
+
+        static BytesSize2 InferByteSize2(ref uint bitsize)
+        {
+            byte value = (byte)(Program.Memory[Register.IP + (bitsize / 8)] & 0xC0);
+            var nv = value >> 6;
+
+            bitsize += 2;
+            return (BytesSize2)nv;
         }
 
         static byte InferByte(ref uint bitsize)
@@ -43,6 +53,7 @@ namespace Oblique
             if (bitsize % 8 != 0) bitsize += 8 - (bitsize % 8);
             uint start = Register.IP + (int)(bitsize / 8);
             bitsize += 8 * 2;
+
             return Program.Memory.ReadU16(start);
         }
 
@@ -51,7 +62,10 @@ namespace Oblique
             if (bitsize % 8 != 0) bitsize += 8 - (bitsize % 8);
             uint start = Register.IP + (int)(bitsize / 8);
             bitsize += 8 * 4;
-            return Program.Memory.ReadU32(start);
+
+            var ui = Program.Memory.ReadU32(start);
+
+            return ui;
         }
         static int InferInt(ref uint bitsize)
         {

@@ -148,6 +148,8 @@ namespace Oblique
             {0xF2,BLTU},
             {0xF3,BGTU},
             {0xF4,BLEU},
+
+            {0xFD,OUTPRTS},
         };
 
         static void ADC(Register rD, Register rS) => rD._value += rS + Register.STAT.GetBit(2);
@@ -156,9 +158,9 @@ namespace Oblique
         static void ADCI8(Register rD, byte imm8) => rD._value = Register.AddWithCarry(rD, imm8) + Register.STAT.GetBit(2);
 
         static void ADD(Register rD, Register rS) => rD._value += rS;
-        static void ADDI32(Register rD, uint imm32) => rD._value = rD + imm32;
-        static void ADDI16(Register rD, ushort imm16) => rD._value = rD + imm16;
-        static void ADDI8(Register rD, byte imm8) => rD._value = rD + imm8;
+        static void ADDI32(Register rD, uint imm32) => rD._value += imm32;
+        static void ADDI16(Register rD, ushort imm16) => rD._value += imm16;
+        static void ADDI8(Register rD, byte imm8) => rD._value += imm8;
 
         static void AND(Register rD, Register rS) => rD._value &= rS;
         static void ANDI32(Register rD, uint imm32) => rD._value &= imm32;
@@ -382,6 +384,21 @@ namespace Oblique
                 if ((mask >> i & 1) == 1) result |= ((src >> inBit++) & 1) << i;
 
             rD._value = result;
+        }
+
+        static void OUTPRTS(ushort port16,BytesSize2 size2, Register rD)
+        {
+            rD._value = Register.Bregs[0]._value;
+
+            byte[] data = size2 switch
+            {
+                BytesSize2.Byte => new byte[] { (byte)rD._value },
+                BytesSize2.HalfWord => BitConverter.GetBytes((ushort)rD._value),
+                BytesSize2.Word => BitConverter.GetBytes(rD._value),
+                _ => throw new EmulationException($"Invalid byte size {size2}")
+            };
+
+            //Console.WriteLine(Encoding.Default.GetString(data));
         }
     }
 }

@@ -67,12 +67,14 @@ namespace Oblique
         public static Register GetBRegisterFromIP(ref uint bitoffset)
         {
             uint byteIndex = IP + bitoffset / 8;
-            int lo = Program.Memory[byteIndex];
-            int hi = byteIndex + 1 < Program.Memory.Length ? Program.Memory[byteIndex + 1] : 0;
+            int bitPos = (int)(bitoffset % 8);
 
-            bitoffset += 4;
+            int lo = Program.Memory[byteIndex];
+            int hi = Program.Memory[byteIndex + 1];
             int word = lo | (hi << 8);
-            var code = (word >> ((int)bitoffset % 8)) & 0b1111;
+
+            var code = (word >> (bitPos == 0 ? 4 : 0)) & 0b1111;
+            bitoffset += 4;
 
             if (code < Bregs.Length) return Bregs[code];
             throw new EmulationException($"Invalid register code {code:X2}");
