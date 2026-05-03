@@ -153,7 +153,20 @@ namespace Oblique
 
             {0xCB,EXT},
 
+            {0xD3,RDBAD},
+
             {0xD6,CICPY},
+
+            {0xE0,SYSRD},
+            {0xE1,SYSWR},
+
+            {0xE2,SYSCALL},
+            {0xE3,WFI},
+            {0xE4,IRET},
+            {0xE5,ENI},
+            {0xE6,DIS},
+            {0xE8,RDTSC},
+            {0xE9,CPUID},
 
             {0xED,BGE},
             {0xEE,BLT},
@@ -168,13 +181,186 @@ namespace Oblique
             {0xF6,POPR},
             {0xF7,PUSHI32},
 
+            {0xFC,SICF},
+
             {0xFD,OUTPRTS},
+            {0xFE,INPRTS},
+        };
+        public Dictionary<byte, ushort> InstructionSizeMap { get; set; } = new()
+        {
+            {0x00, 16},
+            {0x01, 48},
+            {0x02, 32},
+            {0x03, 24},
+            {0x04, 16},
+            {0x05, 48},
+            {0x06, 32},
+            {0x07, 24},
+            {0x08, 16},
+            {0x09, 48},
+            {0x0A, 32},
+            {0x0B, 24},
+            {0x0C, 16},
+            {0x0D, 48},
+            {0x0E, 16},
+            {0x0F, 16},
+            {0x10, 16},
+            {0x11, 16},
+            {0x12, 24},
+            {0x13, 24},
+            {0x14, 24},
+            {0x15, 16},
+            {0x16, 48},
+            {0x17, 48},
+            {0x18, 32},
+            {0x19, 24},
+            {0x1A, 48},
+            {0x1B, 32},
+            {0x1C, 24},
+            {0x1D, 48},
+            {0x1E, 32},
+            {0x1F, 24},
+            {0x20, 16},
+            {0x21, 16},
+            {0x22, 16},
+            {0x23, 16},
+            {0x24, 16},
+            {0x25, 16},
+            {0x26, 8},
+            {0x27, 16},
+            {0x28, 40},
+            {0x29, 40},
+            {0x2A, 16},
+            {0x2B, 16},
+            {0x2C, 40},
+            {0x2D, 40},
+            {0x2E, 8},
+            {0x2F, 24},
+            {0x30, 8},
+            {0x31, 8},
+            {0x32, 16},
+            {0x33, 16},
+            {0x34, 8},
+            {0x35, 8},
+            {0x36, 8},
+            {0x37, 8},
+            {0x38, 16},
+            {0x39, 16},
+            {0x3A, 16},
+            {0x3B, 16},
+            {0x40, 16},
+            {0x41, 24},
+            {0x42, 16},
+            {0x43, 16},
+            {0x44, 16},
+            {0x45, 24},
+            {0x46, 16},
+            {0x47, 24},
+            {0x48, 16},
+            {0x49, 24},
+            {0x4A, 16},
+            {0x4B, 24},
+            {0x50, 16},
+            {0x51, 48},
+            {0x52, 32},
+            {0x53, 24},
+            {0x54, 16},
+            {0x55, 48},
+            {0x56, 32},
+            {0x57, 24},
+            {0x58, 16},
+            {0x59, 48},
+            {0x5A, 32},
+            {0x5B, 24},
+            {0x5C, 16},
+            {0x5D, 16},
+            {0x5E, 16},
+            {0x5F, 48},
+            {0x60, 32},
+            {0x61, 24},
+            {0x70, 24},
+            {0x71, 24},
+            {0x80, 16},
+            {0x81, 16},
+            {0x82, 16},
+            {0x83, 16},
+            {0x84, 24},
+            {0x85, 16},
+            {0x86, 16},
+            {0x87, 16},
+            {0x88, 48},
+            {0x89, 16},
+            {0x8A, 16},
+            {0x8B, 16},
+            {0x8C, 48},
+            {0x90, 16},
+            {0x91, 16},
+            {0x92, 16},
+            {0x93, 16},
+            {0x94, 16},
+            {0x95, 16},
+            {0xA0, 24},
+            {0xA1, 24},
+            {0xA2, 24},
+            {0xA3, 24},
+            {0xA4, 24},
+            {0xA5, 24},
+            {0xA6, 24},
+            {0xA7, 24},
+            {0xA8, 24},
+            {0xA9, 24},
+            {0xAA, 24},
+            {0xAB, 48},
+            {0xAC, 24},
+            {0xAD, 24},
+            {0xB0, 8},
+            {0xB1, 8},
+            {0xB2, 16},
+            {0xC0, 24},
+            {0xC1, 16},
+            {0xCB, 24},
+            {0xD0, 24},
+            {0xD1, 24},
+            {0xD2, 16},
+            {0xD3, 16},
+            {0xD6, 24},
+            {0xE0, 16},
+            {0xE1, 16},
+            {0xE2, 8},
+            {0xE3, 8},
+            {0xE4, 8},
+            {0xE5, 8},
+            {0xE6, 8},
+            {0xE7, 8},
+            {0xE8, 16},
+            {0xE9, 16},
+            {0xEA, 8},
+            {0xEB, 8},
+            {0xEC, 8},
+            {0xED, 16},
+            {0xEE, 16},
+            {0xEF, 16},
+            {0xF0, 16},
+            {0xF1, 16},
+            {0xF2, 16},
+            {0xF3, 16},
+            {0xF4, 16},
+            {0xF5, 16},
+            {0xF6, 16},
+            {0xF7, 40},
+            {0xF8, 0},
+            {0xF9, 0},
+            {0xFA, 0},
+            {0xFB, 0},
+            {0xFC, 16},
+            {0xFD, 32},
+            {0xFE, 32},
         };
 
         static void ADC(Register rD, Register rS) => rD._value += rS + Register.STAT.GetBit(2);
-        static void ADCI32(Register rD, uint imm32) => rD._value = Register.AddWithCarry(rD, imm32) + Register.STAT.GetBit(2);
-        static void ADCI16(Register rD, ushort imm16) => rD._value = Register.AddWithCarry(rD, imm16) + Register.STAT.GetBit(2);
-        static void ADCI8(Register rD, byte imm8) => rD._value = Register.AddWithCarry(rD, imm8) + Register.STAT.GetBit(2);
+        static void ADCI32(Register rD, uint imm32) => rD._value += imm32 + Register.STAT.GetBit(2);
+        static void ADCI16(Register rD, ushort imm16) => rD._value += imm16 + Register.STAT.GetBit(2);
+        static void ADCI8(Register rD, byte imm8) => rD._value += imm8 + Register.STAT.GetBit(2);
 
         static void ADD(Register rD, Register rS) => rD._value += rS;
         static void ADDI32(Register rD, uint imm32) => rD._value += imm32;
@@ -188,11 +374,11 @@ namespace Oblique
 
         static void CMP(Register rA, Register rB)
         {
-            var tmp = rA - rB;
+            var tmp = (int)rA - (int)rB;
             Register.STAT.SetBit(0,tmp == 0);
             Register.STAT.SetBit(1,tmp < 0);
             Register.STAT.SetBit(2,rA < rB);
-            Register.STAT.SetBit(3, ((rA ^ rB) & (rA ^ tmp)) < 0);
+            Register.STAT.SetBit(3, (((int)rA ^ (int)rB) & ((int)rA ^ tmp)) < 0);
             Register.STAT.SetBit(4, (BitOperations.PopCount((uint)tmp & 0xFF) & 1) == 0);
         }
         static void CMPI32(Register rD, uint imm32) => CMP(rD, imm32);
@@ -210,16 +396,16 @@ namespace Oblique
         static void UDIV(Register rD, Register rA, Register rB) => rD._value = rA / rB;
 
         static void ORI32(Register rD, uint imm32) => rD._value |= imm32;
-        static void ORI16(Register rD, uint imm16) => rD._value |= imm16;
-        static void ORI8(Register rD, uint imm8) => rD._value |= imm8;
+        static void ORI16(Register rD, ushort imm16) => rD._value |= imm16;
+        static void ORI8(Register rD, byte imm8) => rD._value |= imm8;
 
         static void XORI32(Register rD, uint imm32) => rD._value ^= imm32;
-        static void XORI16(Register rD, uint imm16) => rD._value ^= imm16;
-        static void XORI8(Register rD, uint imm8) => rD._value ^= imm8;
+        static void XORI16(Register rD, ushort imm16) => rD._value ^= imm16;
+        static void XORI8(Register rD, byte imm8) => rD._value ^= imm8;
 
         static void SUBI32(Register rD, uint imm32) => rD._value -= imm32;
-        static void SUBI16(Register rD, uint imm16) => rD._value -= imm16;
-        static void SUBI8(Register rD, uint imm8) => rD._value -= imm8;
+        static void SUBI16(Register rD, ushort imm16) => rD._value -= imm16;
+        static void SUBI8(Register rD, byte imm8) => rD._value -= imm8;
 
         static void ADCF(Register rD, Register rS) { ADC(rD, rS); CMP(rD, rS); }
         static void ADCI32F(Register rD, uint imm32) { ADCI32(rD, imm32); CMP(rD, imm32); }
@@ -279,21 +465,25 @@ namespace Oblique
         static void BGEU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 0 ? rel8 : 0;
         static void BLTU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 1 ? rel8 : 0;
         static void BGTU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 0 && Register.STAT.GetBit(0) == 0 ? rel8 : 0;
-        static void BLEU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 1 || Register.STAT.GetBit(0) == 0 ? rel8 : 0;
+        static void BLEU(sbyte rel8) => Register.IP += Register.STAT.GetBit(2) == 1 || Register.STAT.GetBit(0) == 1 ? rel8 : 0;
 
         static void NOP() { }
-        static void BRK() { Program.IsPaused = true; Register.DumpRegister(); }
+        static void BRK() 
+        { 
+            Register.CTLregs[7] = (uint)EmulationFaultType.Breakpoint;
+            Program.IsPaused = true; 
+            Register.DumpRegister(); 
+        }
 
         static void SPAWN(Register rD, Register rFn, Register rArg) => rD._value = Register.SpawnFiber(rFn,rArg);
         static void YIELD(Register rQ) => Register.SwitchFiber(rQ);
-        static void EXT(Register rD, Register rS,byte subop8) => NOP();
 
         static void LDK(Register rD, Register rA, sbyte off8)
         {
             uint addr = (uint)(rA._value + off8);
             if (Program.Memory.CheckCLT6(addr))
                 rD._value = Program.Memory.ReadU32(addr);
-            else throw new EmulationException($"Unaligned memory access at address 0x{addr:X8}");
+            else throw new EmulationException(EmulationFaultType.AlignmentFault,addr,$"Unaligned memory access at address 0x{addr:X8}");
 
         }
         static void STK(Register rS,Register rA, sbyte off8)
@@ -302,7 +492,7 @@ namespace Oblique
 
             if (Program.Memory.CheckCLT6(addr))
                 Program.Memory.WriteU32(addr, rS._value);
-            else throw new EmulationException($"Unaligned memory access at address 0x{addr:X8}");
+            else throw new EmulationException(EmulationFaultType.AlignmentFault, addr,$"Unaligned memory access at address 0x{addr:X8}");
         }
 
         static void LD(Register rD, Register rA, sbyte off8) => rD._value = Program.Memory.ReadU32((uint)(rA._value + off8));
@@ -414,11 +604,12 @@ namespace Oblique
                 BytesSize2.Byte => new byte[] { (byte)rD._value },
                 BytesSize2.HalfWord => BitConverter.GetBytes((ushort)rD._value),
                 BytesSize2.Word => BitConverter.GetBytes(rD._value),
-                _ => throw new EmulationException($"Invalid byte size {size2}")
+                _ => throw new EmulationException(EmulationFaultType.AlignmentFault, (uint)size2, $"Invalid byte size {size2}")
             };
 
             Console.WriteLine(Encoding.Default.GetString(data));
         }
+        static void INPRTS(ushort port16, BytesSize2 size2, Register rD) => NOP();
 
         static void PUSHR(Register rS) => Program.Memory.PushStack(rS);
         static void PUSHI32(uint imm32) => Program.Memory.PushStack(imm32);
@@ -452,5 +643,103 @@ namespace Oblique
             Register.FR = Register.STK;
         }
         static void POPFR() => Register.FR = Program.Memory.PopStack32();
+
+        static void EXT(Register rD, Register rS, byte subop8) => NOP();
+        static void SYSCALL()
+        {
+            uint callnmbr = Register.CTLregs[4]._value & 0xFF;
+
+            Program.Memory.PushStack(Register.STAT._value);
+            Program.Memory.PushStack(Register.IP._value);
+
+            Register.CTLregs[0] = 0;
+
+            uint vectorAddr = Register.CTLregs[1]._value + (4u * callnmbr);
+            Register.IP._value = Program.Memory.ReadU32(vectorAddr);
+        }
+        static void WFI()
+        {
+            if (Register.CTLregs[0] == 1)
+                throw new EmulationException(EmulationFaultType.ProtectionFault, 0, $"Tried to wait for interrupt in user mode");
+
+            while (!Program.InterruptPending) Thread.Sleep(1);
+        }
+        static void IRET()
+        {
+            if (Register.CTLregs[0] == 1)
+                throw new EmulationException(EmulationFaultType.ProtectionFault, 0, $"Tried to return from interrupt in user mode");
+
+            Register.IP._value = Program.Memory.PopStack32();
+            Register.STAT._value = Program.Memory.PopStack32();
+
+            Register.CTLregs[0] = 1;
+        }
+        static void ENI()
+        {
+            if (Register.CTLregs[0] == 1)
+                throw new EmulationException(EmulationFaultType.ProtectionFault, 0, $"Tried to enable interrupts in user mode");
+
+            Register.STAT.SetBit(5,true);
+        }
+        static void DIS()
+        {
+            if (Register.CTLregs[0] == 1)
+                throw new EmulationException(EmulationFaultType.ProtectionFault, 0, $"Tried to disable interrupts in user mode");
+
+            Register.STAT.SetBit(5, false);
+        }
+        static void SYSRD(Register rD, CTLIdx3 ctlidx)
+        {
+            if (Register.CTLregs[0] == 1 && ((byte)ctlidx != 2 && (byte)ctlidx != 5))
+                throw new EmulationException(EmulationFaultType.ProtectionFault,(uint)ctlidx,$"Tried to access CTL{ctlidx} in user mode");
+
+            rD._value = Register.CTLregs[(int)ctlidx];
+        }
+        static void SYSWR(Register rS, CTLIdx3 ctlidx)
+        {
+            if (Register.CTLregs[0] == 1 && (byte)ctlidx != 5)
+                throw new EmulationException(EmulationFaultType.ProtectionFault, (uint)ctlidx,$"Tried to write CTL{ctlidx} in user mode");
+
+            Register.CTLregs[(int)ctlidx] = rS._value;
+        }
+        static void RDBAD(Register rD) => rD._value = Register.BADADDR;
+        static void RDTSC(Register rD) => rD._value = Program.CycleCount;
+        static void CPUID(byte sel8)
+        {
+            Register.CTLregs[3]._value = 0;
+            switch (sel8)
+            {
+                case 1:
+                    Register.Bregs[0]._value = 0x68536C42;
+                    Register.Bregs[1]._value = 0x20323320;
+                    Register.Bregs[2]._value = 0x55504320;
+                    Register.Bregs[3]._value = 0x36323032;
+                    break;
+                case 2:
+                    var now = DateTime.UtcNow;
+                    Register.Bregs[0]._value = (uint)(now.Year * 10000 + now.Month * 100 + now.Day);
+                    break;
+                case 3:
+                    Register.Bregs[0]._value = 0x00000000;
+                    Register.Bregs[1]._value = 0x00000001;
+                    break;
+                case 4:
+                    Register.Bregs[0]._value = 0x00000001;
+                    Register.Bregs[1]._value = 0;
+                    Register.Bregs[2]._value = 0;
+                    Register.Bregs[3]._value = 0;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        static void SICF(byte imm8)
+        {
+            Register.CTLregs[7] = imm8;
+            Program.Memory.PushStack(Register.IP._value);
+
+            Register.IP = Program.Memory.ReadU32(Register.CTLregs[1] + (4 * imm8));
+        }
     }
 }

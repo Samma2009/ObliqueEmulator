@@ -24,6 +24,7 @@ namespace Oblique
         }
 
         public static Register[] CTLregs = new Register[8];
+        public static Register BADADDR = new();
 
         public static Register IP { get => Fibers[CurrentFiberHandle].IP; set => Fibers[CurrentFiberHandle].IP = value; }
         public static Register STK { get => Fibers[CurrentFiberHandle].STK; set => Fibers[CurrentFiberHandle].STK = value; }
@@ -60,7 +61,7 @@ namespace Oblique
 
         public static void SwitchFiber(uint handle)
         {
-            if (!Fibers.ContainsKey(handle)) throw new EmulationException($"Tried to switch to nonexistant fiber {handle}");
+            if (!Fibers.ContainsKey(handle)) throw new EmulationException(EmulationFaultType.None,0,$"Tried to switch to nonexistant fiber {handle}");
             CurrentFiberHandle = handle;
         }
 
@@ -76,18 +77,18 @@ namespace Oblique
             bitoffset += 4;
 
             if (code < Bregs.Length) return Bregs[code];
-            throw new EmulationException($"Invalid register code {code:X2}");
+            throw new EmulationException(EmulationFaultType.None,0,$"Invalid register code {code:X2}");
         }
 
         public uint GetBit(int bitIndex)
         {
-            if (bitIndex < 0 || bitIndex >= 32) throw new EmulationException($"Tried to get bit {bitIndex}");
+            if (bitIndex < 0 || bitIndex >= 32) throw new EmulationException(EmulationFaultType.AlignmentFault, (uint)bitIndex, $"Tried to get bit {bitIndex}");
             return (_value >> bitIndex) & 1;
         }
 
         public void SetBit(int bitIndex, bool value)
         {
-            if (bitIndex < 0 || bitIndex >= 32) throw new EmulationException($"Tried to set bit {bitIndex}");
+            if (bitIndex < 0 || bitIndex >= 32) throw new EmulationException(EmulationFaultType.AlignmentFault, (uint)bitIndex,$"Tried to set bit {bitIndex}");
             if (value) _value |= (1u << bitIndex);
             else _value &= ~(1u << bitIndex);
         }
@@ -143,7 +144,12 @@ namespace Oblique
         public static Register operator +(Register left, Register right) => new(left._value + right._value);
         public static Register operator -(Register left, Register right) => new(left._value - right._value);
         public static Register operator *(Register left, Register right) => new(left._value * right._value);
-        public static Register operator /(Register left, Register right) => new(left._value / right._value);
+        public static Register operator /(Register left, Register right)
+        {
+            if (right._value == 0) new EmulationException(EmulationFaultType.DivideByZero,0,"Tried to divide by zero");
+
+            return new(left._value / right._value);
+        }
         public static Register operator %(Register left, Register right) => new(left._value % right._value);
         public static Register operator +(Register value) => value;
         public static Register operator -(Register value) => new(-value._value);

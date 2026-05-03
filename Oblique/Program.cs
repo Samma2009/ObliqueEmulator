@@ -17,6 +17,9 @@ namespace Oblique
 
         public static Delegate RunningChanged;
 
+        public static uint CycleCount = 0;
+        public static volatile bool InterruptPending = false;
+
         static void Main(string[] args)
         {
             Environment.SetEnvironmentVariable("GSETTINGS_SCHEMA_DIR", ".");
@@ -155,6 +158,8 @@ namespace Oblique
             Memory.Load(Register.IP,program);
 
             IsRunning = true;
+            CycleCount = 0;
+            InterruptPending = false;
 
             EngineThread = new Thread(EngineLoop)
             {
@@ -169,9 +174,26 @@ namespace Oblique
         {
             try
             {
+                foreach (var item in isa.InstructionMap)
+                {
+                    List<object> Parameters = new();
+
+                    uint bitsize = 8;
+
+                    foreach (var item2 in isa.InstructionMap[item.Key].Method.GetParameters())
+                        Parameters.Add(TypeInferer.InferParameter(item2.ParameterType, ref bitsize));
+
+                    if (bitsize % 8 != 0) bitsize += 8 - (bitsize % 8);
+
+                    if (bitsize != isa.InstructionSizeMap[item.Key])
+                        throw new Exception($"Instruction 0x{item.Key:X2} expected to be {isa.InstructionSizeMap[item.Key]} bits but was {bitsize} bits");
+                }
+
                 while (IsRunning)
                 {
                     if (IsPaused) continue;
+
+                    CycleCount++;
 
                     if (Register.IP < Memory.Length) InstructionIvoke();
                     else IsRunning = false;
@@ -193,7 +215,7 @@ namespace Oblique
         {
             var op = Memory[Register.IP];
 
-            if (!isa.InstructionMap.ContainsKey(op)) throw new EmulationException($"Invalid opcode 0x{op:X2} at address {Register.IP:X8}");
+            if (!isa.InstructionMap.ContainsKey(op)) throw new EmulationException(EmulationFaultType.IllegalInstruction, op,$"Invalid opcode 0x{op:X2} at address {Register.IP:X8}");
 
             List<object> Parameters = new();
 
@@ -205,6 +227,9 @@ namespace Oblique
             if (bitsize % 8 != 0) bitsize += 8 - (bitsize % 8);
 
             Register.IP += bitsize / 8;
+
+            if (isa.InstructionSizeMap[op] != bitsize)
+                throw new EmulationException(EmulationFaultType.IllegalInstruction, op, $"Instruction 0x{op:X2} at address {Register.IP:X8} expected to be {isa.InstructionSizeMap[op]} bits but was {bitsize} bits");
 
             isa.InstructionMap[op].DynamicInvoke(Parameters.ToArray());
 

@@ -9,5 +9,6 @@ namespace Oblique
     public interface IISAProvider 
     {
         public Dictionary<byte,Delegate> InstructionMap { get; set; }
+        public Dictionary<byte,ushort> InstructionSizeMap { get; set; }
     }
 }

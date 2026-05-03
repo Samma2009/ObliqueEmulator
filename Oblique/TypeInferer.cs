@@ -20,7 +20,7 @@ namespace Oblique
                 _ when t == typeof(ushort) => InferUShort(ref bitsize),
                 _ when t == typeof(byte) => InferByte(ref bitsize),
                 _ when t == typeof(sbyte) => InferSbyte(ref bitsize),
-                _ => throw new EmulationException($"Unsupported parameter type {t.FullName}")
+                _ => throw new EmulationException(EmulationFaultType.None,0,$"Unsupported parameter type {t.FullName}")
             };
         }
 
