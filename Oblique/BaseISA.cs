@@ -830,7 +830,7 @@ namespace Oblique
         {
             PFR();
             Register.FR = Register.STK;
-            Register.STK._value -= frame16;
+            Register.STK -= frame16;
         }
 
         static void LEAVE() 
