@@ -128,11 +128,45 @@ namespace Oblique
             });
         }
 
+        unsafe float Reinterpret()
+        {
+            fixed (uint* b = &_value) return *(float*)b;
+        }
+
+        public unsafe void FloatAdd(float flt)
+        { 
+            float fadd = Reinterpret() + flt;
+            _value = *(uint*)&fadd;
+        }
+        public unsafe void FloatMul(float flt)
+        {
+            float fadd = Reinterpret() * flt;
+            _value = *(uint*)&fadd;
+        }
+        public unsafe void FloatSub(float flt)
+        {
+            float fadd = Reinterpret() - flt;
+            _value = *(uint*)&fadd;
+        }
+        public unsafe void FloatDiv(float flt)
+        {
+            float fadd = Reinterpret() / flt;
+            _value = *(uint*)&fadd;
+        }
+        public unsafe void FloatSQRT(float flt)
+        {
+            float fadd = (float)Math.Sqrt(flt);
+            _value = *(uint*)&fadd;
+        }
+
+        public unsafe void FloatStore(float flt) => _value = *(uint*)&flt;
+
         public Register() => _value = 0;
         public Register(long value) => _value = (uint)value;
         public Register(int value) => _value = (uint)value;
         public Register(ulong value) => _value = (uint)value;
         public Register(uint value) => _value = value;
+        public Register(float value) => FloatStore(value);
 
         public static Register Zero => new(0);
         public static Register One => new(1);
@@ -261,9 +295,12 @@ namespace Oblique
 
         public static implicit operator uint(Register r) => r._value;
         public static implicit operator int (Register r) => (int)r._value;
+        public static implicit operator float (Register r) => r.Reinterpret();
 
         public static implicit operator Register(uint r) => new(r);
         public static implicit operator Register(int r) => new(r);
+
+        public static implicit operator Register(float r) => new(r);
 
         public static implicit operator Register(ushort r) => new(r);
         public static implicit operator Register(short r) => new(r);

@@ -133,6 +133,31 @@ namespace Oblique
             {0x70,BEXT},
             {0x71,BDEP},
 
+            {0x80,FADD},
+            {0x81,FSUB},
+            {0x82,FMUL},
+            {0x83,FDIV},
+
+            {0x84,FFMA},
+            {0x85,FINV},
+            {0x86,FSQRT},
+
+            {0x87,FCMP},
+            {0x88,FCMPI},
+            {0x89,ITOF},
+            {0x8A,FTOI},
+
+            {0x8B,FMOV},
+            {0x8C,FMOVI32},
+
+            {0x90,FADDF},
+            {0x91,FSUBF},
+            {0x92,FMULF},
+            {0x93,FDIVF},
+
+            {0x94,FINVF},
+            {0x95,FSQRTF},
+
             {0xA0,LDK},
             {0xA1,STK},
             {0xA2,LD},
@@ -943,5 +968,75 @@ namespace Oblique
 
             Register.IP = Program.Memory.ReadU32(Register.CTLregs[1] + (4 * imm8));
         }
+
+        static void FADD(Register rD, Register rS) => rD.FloatAdd((float)rS);
+        
+        static void FSUB(Register rD, Register rS) => rD.FloatSub((float)rS);
+        static void FMUL(Register rD, Register rS) => rD.FloatMul((float)rS);
+        static void FDIV(Register rD, Register rS) => rD.FloatDiv((float)rS);
+        static void FFMA(Register rD, Register rA, Register rB) => rD.FloatStore((float)rA * (float)rB + (float)rD);
+        static void FINV(Register rD, Register rS) => rD.FloatStore(1f / (float)rS);
+        static void FSQRT(Register rD, Register rS) => rD.FloatSQRT((float)rS);
+
+        // Stolen from @AzureianGH's emulator
+        static void SetFPFLags(float result)
+        {
+            Register.STAT.SetBit(0, result == 0);
+            Register.STAT.SetBit(1, float.IsNegative(result));
+            Register.STAT.SetBit(2, !float.IsFinite(result));
+            Register.STAT.SetBit(3, false);
+            Register.STAT.SetBit(4, false);
+        }
+
+        static void FADDF(Register rD, Register rS) { FADD(rD,rS); SetFPFLags((float)rD); }
+        static void FSUBF(Register rD, Register rS) { FSUB(rD,rS); SetFPFLags((float)rD); }
+        static void FMULF(Register rD, Register rS) { FMUL(rD,rS); SetFPFLags((float)rD); }
+        static void FDIVF(Register rD, Register rS) { FDIV(rD,rS); SetFPFLags((float)rD); }
+        static void FINVF(Register rD, Register rS) { FINV(rD,rS); SetFPFLags((float)rD); }
+        static void FSQRTF(Register rD, Register rS) { FSQRT(rD,rS); SetFPFLags((float)rD); }
+
+        static void FCMP(Register rA, Register rB)
+        {
+            var tmp = (float)rA - (float)rB;
+
+            if (float.IsNaN(rA) || float.IsNaN(rB))
+            {
+                Register.STAT.SetBit(0, false);
+                Register.STAT.SetBit(1, false);
+                Register.STAT.SetBit(2, false);
+                Register.STAT.SetBit(3, true);
+                Register.STAT.SetBit(4, false);
+            }
+            else
+            {
+                Register.STAT.SetBit(3, false);
+                Register.STAT.SetBit(0, (float)rA == (float)rB);
+                Register.STAT.SetBit(1, (float)rA < (float)rB);
+                Register.STAT.SetBit(2, false);
+                Register.STAT.SetBit(4, false);
+            }
+        }
+        static void FCMPI(Register rA, float imm32) => FCMP(rA,imm32);
+        static void ITOF(Register rD, Register rS) => rD.FloatStore((float)rS._value);
+        static void FTOI(Register rD, Register rS)
+        {
+            switch (Register.CTLregs[5]._value)
+            {
+                case 0:
+                    rD._value = (uint)Math.Round((float)rS, MidpointRounding.ToEven);
+                    break;
+                case 1:
+                    rD._value = (uint)Math.Round((float)rS, MidpointRounding.ToZero);
+                    break;
+                case 2:
+                    rD._value = (uint)Math.Round((float)rS, MidpointRounding.ToPositiveInfinity);
+                    break;
+                case 3:
+                    rD._value = (uint)Math.Round((float)rS, MidpointRounding.ToNegativeInfinity);
+                    break;
+            }
+        }
+        static void FMOV(Register rD, Register rS) => rD.FloatStore((float)rS);
+        static void FMOVI32(Register rD, float f32) => rD.FloatStore(f32);
     }
 }

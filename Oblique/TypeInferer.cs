@@ -16,6 +16,7 @@ namespace Oblique
                 _ when t == typeof(CTLIdx3) => InferCTLIdx3(ref bitsize),
                 _ when t == typeof(BytesSize2) => InferByteSize2(ref bitsize),
                 _ when t == typeof(int) => InferInt(ref bitsize),
+                _ when t == typeof(float) => InferFloat(ref bitsize),
                 _ when t == typeof(uint) => InferUint(ref bitsize),
                 _ when t == typeof(ushort) => InferUShort(ref bitsize),
                 _ when t == typeof(byte) => InferByte(ref bitsize),
@@ -83,6 +84,13 @@ namespace Oblique
             uint start = Register.IP + (int)(bitsize / 8);
             bitsize += 8 * 4;
             return (int)Program.Memory.ReadU32(start);
+        }
+        static float InferFloat(ref uint bitsize)
+        {
+            if (bitsize % 8 != 0) bitsize += 8 - (bitsize % 8);
+            uint start = Register.IP + (int)(bitsize / 8);
+            bitsize += 8 * 4;
+            return (float)new Register(Program.Memory.ReadU32(start));
         }
     }
 }

@@ -13,7 +13,7 @@
 # Roadmap
 ### 1.5:
 - [X] Integer ALU
-- [ ] Floating point
+- [X] Floating point
 - [X] Branching
 - [X] Memory
 - [X] Stack
@@ -23,6 +23,6 @@
 - [ ] Observability
 - [X] I/O Ports
 - [ ] Repeat prefix
-> 132 / 167 instructions (80%)
+> 151 / 167 instructions (90%)
 ### 2.0:
 > at the time of writing, the bslash 2.0 architecture has not been published, and still in design
