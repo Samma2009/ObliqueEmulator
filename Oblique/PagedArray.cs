@@ -28,6 +28,8 @@ namespace Oblique
             }
         }
 
+        public Dictionary<uint, byte[]> GetPages() => _pages;
+
         public void Clear() => _pages.Clear();
 
         public void Load(uint baseAddr, byte[] data)

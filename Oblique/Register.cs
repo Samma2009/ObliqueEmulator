@@ -146,7 +146,7 @@ namespace Oblique
         public static Register operator *(Register left, Register right) => new(left._value * right._value);
         public static Register operator /(Register left, Register right)
         {
-            if (right._value == 0) new EmulationException(EmulationFaultType.DivideByZero,0,"Tried to divide by zero");
+            if (right._value == 0)throw new EmulationException(EmulationFaultType.DivideByZero,0,"Tried to divide by zero");
 
             return new(left._value / right._value);
         }

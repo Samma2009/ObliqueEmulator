@@ -13,6 +13,7 @@ namespace Oblique
         static volatile bool paused = false;
         public static bool IsRunning { get => running; set { running = value; RunningChanged?.DynamicInvoke(); } }
         public static bool IsPaused { get => paused; set { paused = value; RunningChanged?.DynamicInvoke(); } }
+        public static bool SteppedExecution { get; set; }
         public static Window window;
 
         public static Delegate RunningChanged;
@@ -118,6 +119,10 @@ namespace Oblique
                 loadItem.Activated += (_, _) => Register.DumpRegister();
                 fileMenu.Append(loadItem);
 
+                var DebugItem = new MenuItem("Debugger");
+                DebugItem.Activated += (_, _) => new ObliqueDebugger().Show();
+                fileMenu.Append(DebugItem);
+
                 topbar.Append(fileItem);
             }
 
@@ -144,12 +149,31 @@ namespace Oblique
             box.PackEnd(bottombar,false,false,0);
 
             window.Add(box);
+
+            Drag.DestSet(window, DestDefaults.All,[new("text/uri-list", TargetFlags.OtherApp, 0)],Gdk.DragAction.Copy);
+
+            window.DragDataReceived += (_, args) =>
+            {
+                string path = new Uri(args.SelectionData.Uris[0]).LocalPath;
+                StartEngine(path);
+
+                Drag.Finish(args.Context, true, false, args.Time);
+            };
         }
 
         static void StartEngine(string file)
         {
             IsRunning = false;
             if (EngineThread != null) EngineThread.Join(500);
+
+            if (!File.Exists(file)) 
+            {
+                var dialog = new MessageDialog(window, DialogFlags.Modal,
+                            MessageType.Error, ButtonsType.Ok, $"File {file} does not exist");
+                dialog.Run();
+                dialog.Destroy();
+                return;
+            }
 
             Register.ResetRegisters();
 
@@ -197,6 +221,8 @@ namespace Oblique
 
                     if (Register.IP < Memory.Length) InstructionIvoke();
                     else IsRunning = false;
+
+                    if (SteppedExecution) IsPaused = true;
                 }
             }
             catch (Exception ex)
@@ -233,7 +259,9 @@ namespace Oblique
 
             isa.InstructionMap[op].DynamicInvoke(Parameters.ToArray());
 
-            //Console.WriteLine("Invoked");
+            Console.WriteLine($"{Register.IP - bitsize / 8:X8} | 0x{op:X2} | {bitsize:D3}b | {isa.InstructionAliases[op]}");
+
+            //Console.WriteLine("Invoked 0x" + op.ToString("X2")+ " 0x"+Register.IP._value.ToString("X8"));
         }
     }
 }

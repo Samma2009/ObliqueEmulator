@@ -10,5 +10,6 @@ namespace Oblique
     {
         public Dictionary<byte,Delegate> InstructionMap { get; set; }
         public Dictionary<byte,ushort> InstructionSizeMap { get; set; }
+        public Dictionary<byte, string> InstructionAliases { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -356,7 +357,176 @@ namespace Oblique
             {0xFD, 32},
             {0xFE, 32},
         };
-
+        public Dictionary<byte, string> InstructionAliases { get; set; } = new()
+        {
+            {0x00, "ADC"},
+            {0x01, "ADCI32"},
+            {0x02, "ADCI16"},
+            {0x03, "ADCI8"},
+            {0x04, "ADD"},
+            {0x05, "ADDI32"},
+            {0x06, "ADDI16"},
+            {0x07, "ADDI8"},
+            {0x08, "AND"},
+            {0x09, "ANDI32"},
+            {0x0A, "ANDI16"},
+            {0x0B, "ANDI8"},
+            {0x0C, "CMP"},
+            {0x0D, "CMPI32"},
+            {0x0E, "SUB"},
+            {0x0F, "OR"},
+            {0x10, "XOR"},
+            {0x11, "NOT"},
+            {0x12, "MUL"},
+            {0x13, "DIV"},
+            {0x14, "UDIV"},
+            {0x15, "MOV"},
+            {0x16, "MOVI32"},
+            {0x17, "ORI32"},
+            {0x18, "ORI16"},
+            {0x19, "ORI8"},
+            {0x1A, "XORI32"},
+            {0x1B, "XORI16"},
+            {0x1C, "XORI8"},
+            {0x1D, "SUBI32"},
+            {0x1E, "SUBI16"},
+            {0x1F, "SUBI8"},
+            {0x20, "BZ"},
+            {0x21, "BNZ"},
+            {0x22, "BS"},
+            {0x23, "BNS"},
+            {0x24, "BO"},
+            {0x25, "BNO"},
+            {0x26, "RET"},
+            {0x27, "J"},
+            {0x28, "J32"},
+            {0x29, "CALL"},
+            {0x2A, "CALLR"},
+            {0x2B, "JR"},
+            {0x2C, "JA"},
+            {0x2D, "CALLA"},
+            {0x2E, "LEAVE"},
+            {0x2F, "ENTERI16"},
+            {0x30, "PSTAT"},
+            {0x31, "POPSTAT"},
+            {0x32, "PCTL"},
+            {0x33, "POPCTL"},
+            {0x34, "PFR"},
+            {0x35, "POPFR"},
+            {0x36, "NOP"},
+            {0x37, "BRK"},
+            {0x38, "RDSTK"},
+            {0x39, "WRSTK"},
+            {0x3A, "RDFR"},
+            {0x3B, "WRFR"},
+            {0x40, "ROR"},
+            {0x41, "RORI8"},
+            {0x42, "POPC"},
+            {0x43, "CLZ"},
+            {0x44, "CTZ"},
+            {0x45, "BTST"},
+            {0x46, "SHL"},
+            {0x47, "SHLI8"},
+            {0x48, "LSR"},
+            {0x49, "LSRI8"},
+            {0x4A, "ASR"},
+            {0x4B, "ASRI8"},
+            {0x50, "ADC.F"},
+            {0x51, "ADCI32.F"},
+            {0x52, "ADCI16.F"},
+            {0x53, "ADCI8.F"},
+            {0x54, "ADD.F"},
+            {0x55, "ADDI32.F"},
+            {0x56, "ADDI16.F"},
+            {0x57, "ADDI8.F"},
+            {0x58, "AND.F"},
+            {0x59, "ANDI32.F"},
+            {0x5A, "ANDI16.F"},
+            {0x5B, "ANDI8.F"},
+            {0x5C, "SUB.F"},
+            {0x5D, "OR.F"},
+            {0x5E, "XOR.F"},
+            {0x5F, "SUBI32.F"},
+            {0x60, "SUBI16.F"},
+            {0x61, "SUBI8.F"},
+            {0x70, "BEXT"},
+            {0x71, "BDEP"},
+            {0x80, "FADD"},
+            {0x81, "FSUB"},
+            {0x82, "FMUL"},
+            {0x83, "FDIV"},
+            {0x84, "FFMA"},
+            {0x85, "FINV"},
+            {0x86, "FSQRT"},
+            {0x87, "FCMP"},
+            {0x88, "FCMPI"},
+            {0x89, "ITOF"},
+            {0x8A, "FTOI"},
+            {0x8B, "FMOV"},
+            {0x8C, "FMOVI32"},
+            {0x90, "FADD.F"},
+            {0x91, "FSUB.F"},
+            {0x92, "FMUL.F"},
+            {0x93, "FDIV.F"},
+            {0x94, "FINV.F"},
+            {0x95, "FSQRT.F"},
+            {0xA0, "LD.K"},
+            {0xA1, "ST.K"},
+            {0xA2, "LD"},
+            {0xA3, "ST"},
+            {0xA4, "LDRGN"},
+            {0xA5, "LDBU"},
+            {0xA6, "LDBS"},
+            {0xA7, "LDHU"},
+            {0xA8, "LDHS"},
+            {0xA9, "STB"},
+            {0xAA, "STH"},
+            {0xAB, "LDRIP"},
+            {0xAC, "LL"},
+            {0xAD, "SC"},
+            {0xB0, "TXBEGIN"},
+            {0xB1, "TXEND"},
+            {0xB2, "TXABORT"},
+            {0xC0, "SPAWN"},
+            {0xC1, "YIELD"},
+            {0xCB, "EXT"},
+            {0xD0, "TLOG"},
+            {0xD1, "PERF"},
+            {0xD2, "PEEKPTE"},
+            {0xD3, "RDBAD"},
+            {0xD6, "CICPY"},
+            {0xE0, "SYSRD"},
+            {0xE1, "SYSWR"},
+            {0xE2, "SYSCALL"},
+            {0xE3, "WFI"},
+            {0xE4, "IRET"},
+            {0xE5, "ENI"},
+            {0xE6, "DIS"},
+            {0xE7, "FENCE"},
+            {0xE8, "RDTSC"},
+            {0xE9, "CPUID"},
+            {0xEA, "FENCE.R"},
+            {0xEB, "FENCE.W"},
+            {0xEC, "FENCE.I"},
+            {0xED, "BGE"},
+            {0xEE, "BLT"},
+            {0xEF, "BGT"},
+            {0xF0, "BLE"},
+            {0xF1, "BGEU"},
+            {0xF2, "BLTU"},
+            {0xF3, "BGTU"},
+            {0xF4, "BLEU"},
+            {0xF5, "PUSHR"},
+            {0xF6, "POPR"},
+            {0xF7, "PUSHI32"},
+            {0xF8, "RRPIN"},
+            {0xF9, "RRPIN.R"},
+            {0xFA, "RRPIN.V"},
+            {0xFB, "RRPIN.VR"},
+            {0xFC, "SICF"},
+            {0xFD, "OUTPRT.S"},
+            {0xFE, "INPRT.S"},
+        };
         static void ADC(Register rD, Register rS) => rD._value += rS + Register.STAT.GetBit(2);
         static void ADCI32(Register rD, uint imm32) => rD._value += imm32 + Register.STAT.GetBit(2);
         static void ADCI16(Register rD, ushort imm16) => rD._value += imm16 + Register.STAT.GetBit(2);
@@ -372,6 +542,31 @@ namespace Oblique
         static void ANDI16(Register rD, ushort imm16) => rD._value &= imm16;
         static void ANDI8(Register rD, byte imm8) => rD._value &= imm8;
 
+        // Stolen from @AzureianGH's emulator
+        static void LFLAG(uint value)
+        {
+            Register.STAT.SetBit(0, value == 0);
+            Register.STAT.SetBit(1, (value & 0x80000000u) != 0);
+            Register.STAT.SetBit(2, false);
+            Register.STAT.SetBit(3, false);
+            Register.STAT.SetBit(4, (BitOperations.PopCount((uint)value & 0xFF) & 1) == 0);
+        }
+
+        // Stolen from @AzureianGH's emulator
+        static void ACMP(Register rA, Register rB,uint carry_in)
+        {
+            var result = rA + rB + carry_in;
+
+            ulong wide = (ulong)rA + (ulong)rB + (ulong)carry_in;
+            bool carry = (wide >> 32) != 0;
+            bool overflow = (((rA ^ result) & (rB ^ result)) & 0x80000000u) != 0;
+
+            Register.STAT.SetBit(0, result == 0);
+            Register.STAT.SetBit(1, (result & 0x80000000u) != 0);
+            Register.STAT.SetBit(2, carry);
+            Register.STAT.SetBit(3, overflow);
+            Register.STAT.SetBit(4, (BitOperations.PopCount((uint)result & 0xFF) & 1) == 0);
+        }
         static void CMP(Register rA, Register rB)
         {
             var tmp = (int)rA - (int)rB;
@@ -407,33 +602,37 @@ namespace Oblique
         static void SUBI16(Register rD, ushort imm16) => rD._value -= imm16;
         static void SUBI8(Register rD, byte imm8) => rD._value -= imm8;
 
-        static void ADCF(Register rD, Register rS) { ADC(rD, rS); CMP(rD, rS); }
-        static void ADCI32F(Register rD, uint imm32) { ADCI32(rD, imm32); CMP(rD, imm32); }
-        static void ADCI16F(Register rD, ushort imm16) { ADCI16(rD, imm16); CMP(rD, imm16); }
-        static void ADCI8F(Register rD, byte imm8) { ADCI8(rD, imm8); CMP(rD, imm8); }
+        static void ADCF(Register rD, Register rS) { ADC(rD, rS); ACMP(rD, rS, Register.STAT.GetBit(2)); }
+        static void ADCI32F(Register rD, uint imm32) { ADCI32(rD, imm32); ACMP(rD, imm32, Register.STAT.GetBit(2)); }
+        static void ADCI16F(Register rD, ushort imm16) { ADCI16(rD, imm16); ACMP(rD, imm16, Register.STAT.GetBit(2)); }
+        static void ADCI8F(Register rD, byte imm8) { ADCI8(rD, imm8); ACMP(rD, imm8, Register.STAT.GetBit(2)); }
 
-        static void ADDF(Register rD, Register rS) { ADD(rD, rS); CMP(rD, rS); }
-        static void ADDI32F(Register rD, uint imm32) { ADDI32(rD, imm32); CMP(rD, imm32); }
-        static void ADDI16F(Register rD, ushort imm16) { ADDI16(rD, imm16); CMP(rD, imm16); }
-        static void ADDI8F(Register rD, byte imm8) { ADDI8(rD, imm8); CMP(rD, imm8); }
+        static void ADDF(Register rD, Register rS) { ADD(rD, rS); ACMP(rD, rS,0); }
+        static void ADDI32F(Register rD, uint imm32) { ADDI32(rD, imm32); ACMP(rD, imm32,0); }
+        static void ADDI16F(Register rD, ushort imm16) { ADDI16(rD, imm16); ACMP(rD, imm16,0); }
+        static void ADDI8F(Register rD, byte imm8) { ADDI8(rD, imm8); ACMP(rD, imm8,0); }
 
-        static void ANDF(Register rD, Register rS) { AND(rD, rS); CMP(rD, rS); }
-        static void ANDI32F(Register rD, uint imm32) { ANDI32(rD, imm32); CMP(rD, imm32); }
-        static void ANDI16F(Register rD, ushort imm16) { ANDI16(rD, imm16); CMP(rD, imm16); }
-        static void ANDI8F(Register rD, byte imm8) { ANDI8(rD, imm8); CMP(rD, imm8); }
+        static void ANDF(Register rD, Register rS) { AND(rD, rS); LFLAG(rD._value); }
+        static void ANDI32F(Register rD, uint imm32) { ANDI32(rD, imm32); LFLAG(rD._value); }
+        static void ANDI16F(Register rD, ushort imm16) { ANDI16(rD, imm16); LFLAG(rD._value); }
+        static void ANDI8F(Register rD, byte imm8) { ANDI8(rD, imm8); LFLAG(rD._value); }
 
         static void SUBF(Register rD, Register rS) { SUB(rD, rS); CMP(rD, rS); }
         static void SUBI32F(Register rD, uint imm32) { SUBI32(rD, imm32); CMP(rD, imm32); }
         static void SUBI16F(Register rD, ushort imm16) { SUBI16(rD, imm16); CMP(rD, imm16); }
         static void SUBI8F(Register rD, byte imm8) { SUBI8(rD, imm8); CMP(rD, imm8); }
 
-        static void ORF(Register rD, Register rS) { OR(rD, rS); CMP(rD, rS); }
-        static void XORF(Register rD, Register rS) { XOR(rD, rS); CMP(rD, rS); }
+        static void ORF(Register rD, Register rS) { OR(rD, rS); LFLAG(rD._value); }
+        static void XORF(Register rD, Register rS) { XOR(rD, rS); LFLAG(rD._value); }
 
         static void JR(Register abs32) => Register.IP = abs32._value;
         static void JA(uint abs32) => Register.IP = abs32;
         static void J(sbyte rel8) => Register.IP += rel8;
-        static void J32(int rel32) => Register.IP += rel32;
+        static void J32(int rel32)
+        {
+            //Console.WriteLine($"{(Register.IP + rel32):X8} " + rel32.ToString("X8") + " " + Register.IP._value.ToString("X8"));
+            Register.IP += rel32;
+        }
 
         static void BZ(sbyte rel8) => Register.IP += Register.STAT.GetBit(0) == 1 ? rel8 : 0;
         static void BNZ(sbyte rel8) => Register.IP += Register.STAT.GetBit(0) == 0 ? rel8 : 0;
@@ -444,7 +643,13 @@ namespace Oblique
         static void BO(sbyte rel8) => Register.IP += Register.STAT.GetBit(3) == 1 ? rel8 : 0;
         static void BNO(sbyte rel8) => Register.IP += Register.STAT.GetBit(3) == 0 ? rel8 : 0;
 
-        static void RET() => Register.IP = Program.Memory.PopStack32();
+        static void RET()
+        {
+            var pip = Register.IP;
+            Register.IP = Program.Memory.PopStack32();
+
+            //Console.WriteLine(pip._value.ToString("X8") + " " + Register.IP._value.ToString("X8"));
+        }
 
         static void CALLR(Register abs32)
         {
@@ -607,7 +812,7 @@ namespace Oblique
                 _ => throw new EmulationException(EmulationFaultType.AlignmentFault, (uint)size2, $"Invalid byte size {size2}")
             };
 
-            Console.WriteLine(Encoding.Default.GetString(data));
+            Debug.Write(Encoding.Default.GetString(data));
         }
         static void INPRTS(ushort port16, BytesSize2 size2, Register rD) => NOP();
 
@@ -624,7 +829,8 @@ namespace Oblique
         static void ENTERI16(ushort frame16)
         {
             PFR();
-            Register.STK -= frame16;
+            Register.FR = Register.STK;
+            Register.STK._value -= frame16;
         }
 
         static void LEAVE() 
@@ -637,11 +843,7 @@ namespace Oblique
         static void POPSTAT() => Register.STAT = Program.Memory.PopStack32();
         static void PCTL(CTLIdx3 n) => Program.Memory.PushStack(Register.CTLregs[(int)n]);
         static void POPCTL(CTLIdx3 n) => Register.CTLregs[(int)n] = Program.Memory.PopStack32();
-        static void PFR()
-        {
-            Program.Memory.PushStack(Register.FR._value);
-            Register.FR = Register.STK;
-        }
+        static void PFR() => Program.Memory.PushStack(Register.FR._value);
         static void POPFR() => Register.FR = Program.Memory.PopStack32();
 
         static void EXT(Register rD, Register rS, byte subop8) => NOP();
